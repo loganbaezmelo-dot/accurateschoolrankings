@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AccurateSchoolRankings</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: #0d1117;
+      color: #c9d1d9;
+      padding: 24px 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 760px;
+    }
+
+    header {
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      color: #58a6ff;
+      font-size: 26px;
+      margin-bottom: 6px;
+    }
+
+    p.subtitle {
+      color: #8b949e;
+      font-size: 14px;
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .search-bar {
+      width: 100%;
+      padding: 12px 16px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      color: #f0f6fc;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .search-bar:focus {
+      border-color: #58a6ff;
+    }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 8px 14px;
+      border-radius: 20px;
+      border: 1px solid #30363d;
+      background: #21262d;
+      color: #8b949e;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active {
+      background: #238636;
+      color: #ffffff;
+      border-color: #2ea043;
+    }
+
+    .school-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .school-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 16px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .school-card:hover {
+      border-color: #58a6ff;
+      background: #1c2128;
+    }
+
+    .school-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #f0f6fc;
+      margin-bottom: 4px;
+    }
+
+    .school-meta {
+      font-size: 13px;
+      color: #8b949e;
+    }
+
+    .type-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-left: 6px;
+      background: #30363d;
+      color: #c9d1d9;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      z-index: 100;
+    }
+
+    .modal {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 440px;
+      padding: 24px;
+      position: relative;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: none;
+      border: none;
+      color: #8b949e;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #f0f6fc;
+      margin-bottom: 16px;
+      padding-right: 24px;
+    }
+
+    .score-badge-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .score-display {
+      font-size: 38px;
+      font-weight: 800;
+    }
+
+    .recommendation {
+      font-size: 14px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    .rec-good {
+      background: rgba(46, 160, 67, 0.15);
+      color: #3fb950;
+      border: 1px solid #238636;
+    }
+
+    .rec-bad {
+      background: rgba(248, 81, 73, 0.15);
+      color: #f85149;
+      border: 1px solid #da3633;
+    }
+
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    .stats-table td {
+      padding: 8px 0;
+      border-bottom: 1px solid #21262d;
+    }
+
+    .stats-table td:last-child {
+      text-align: right;
+      color: #f0f6fc;
+      font-weight: 600;
+    }
+
+    .status-text {
+      color: #8b949e;
+      padding: 24px 0;
+      text-align: center;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>AccurateSchoolRankings</h1>
+      <p class="subtitle">Real FLDOE assessment data without third-party algorithm distortion</p>
+    </header>
+
+    <div class="controls">
+      <input type="text" id="searchInput" class="search-bar" placeholder="Search by school or district...">
+      <div class="filters">
+        <button class="filter-btn active" data-filter="Public Neighborhood">Public Neighborhood</button>
+        <button class="filter-btn" data-filter="Charter">Charter</button>
+        <button class="filter-btn" data-filter="Magnet">Magnet</button>
+      </div>
+    </div>
+
+    <div class="school-list" id="schoolList"></div>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <button class="close-btn" id="closeBtn">&times;</button>
+      <div class="modal-title" id="mName"></div>
+      <div class="score-badge-wrap">
+        <div class="score-display" id="mScore"></div>
+        <div class="recommendation" id="mRec"></div>
+      </div>
+      <table class="stats-table">
+        <tr>
+          <td>Official FLDOE Grade</td>
+          <td id="mGrade"></td>
+        </tr>
+        <tr>
+          <td>School Category</td>
+          <td id="mType"></td>
+        </tr>
+        <tr>
+          <td>District</td>
+          <td id="mDistrict"></td>
+        </tr>
+        <tr>
+          <td>Student Growth Progress</td>
+          <td id="mGrowth"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let currentFilter = "Public Neighborhood";
+    let debounceTimer = null;
+
+    const listEl = document.getElementById("schoolList");
+    const searchEl = document.getElementById("searchInput");
+    const filterBtns = document.querySelectorAll(".filter-btn");
+
+    const modalOverlay = document.getElementById("modalOverlay");
+    const closeBtn = document.getElementById("closeBtn");
+    const mName = document.getElementById("mName");
+    const mScore = document.getElementById("mScore");
+    const mRec = document.getElementById("mRec");
+    const mGrade = document.getElementById("mGrade");
+    const mType = document.getElementById("mType");
+    const mDistrict = document.getElementById("mDistrict");
+    const mGrowth = document.getElementById("mGrowth");
+
+    async function fetchSchools() {
+      const query = encodeURIComponent(searchEl.value.trim());
+      const filter = encodeURIComponent(currentFilter);
+      listEl.innerHTML = `<div class="status-text">Loading verified records...</div>`;
+
+      try {
+        const res = await fetch(`/api/schools?filter=${filter}&search=${query}`);
+        if (!res.ok) throw new Error("Failed to fetch data");
+        const data = await res.json();
+        renderCards(data.schools || []);
+      } catch (err) {
+        listEl.innerHTML = `<div class="status-text" style="color: #f85149;">Error connecting to API. Run via Vercel CLI or check deployment.</div>`;
+      }
+    }
+
+    function renderCards(schools) {
+      listEl.innerHTML = "";
+
+      if (schools.length === 0) {
+        listEl.innerHTML = `<div class="status-text">No schools found matching your search.</div>`;
+        return;
+      }
+
+      schools.forEach(school => {
+        const card = document.createElement("div");
+        card.className = "school-card";
+        card.innerHTML = `
+          <div>
+            <div class="school-name">
+              ${school.name}
+              <span class="type-badge">${school.type}</span>
+            </div>
+            <div class="school-meta">${school.district} County &bull; FLDOE Grade: ${school.fldoeGrade}</div>
+          </div>
+          <div style="font-weight: 700; color: #58a6ff;">&rarr;</div>
+        `;
+        card.addEventListener("click", () => openModal(school));
+        listEl.appendChild(card);
+      });
+    }
+
+    function openModal(school) {
+      mName.textContent = school.name;
+      mScore.textContent = `${school.score}/10`;
+      mGrade.textContent = school.fldoeGrade;
+      mType.textContent = school.type;
+      mDistrict.textContent = `${school.district} County`;
+      mGrowth.textContent = school.progress;
+
+      if (school.score >= 5.0) {
+        mRec.textContent = "Recommended";
+        mRec.className = "recommendation rec-good";
+        mScore.style.color = "#3fb950";
+      } else {
+        mRec.textContent = "Not Recommended";
+        mRec.className = "recommendation rec-bad";
+        mScore.style.color = "#f85149";
+      }
+
+      modalOverlay.style.display = "flex";
+    }
+
+    closeBtn.addEventListener("click", () => {
+      modalOverlay.style.display = "none";
+    });
+
+    modalOverlay.addEventListener("click", (e) => {
+      if (e.target === modalOverlay) modalOverlay.style.display = "none";
+    });
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        filterBtns.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentFilter = btn.getAttribute("data-filter");
+        fetchSchools();
+      });
+    });
+
+    searchEl.addEventListener("input", () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(fetchSchools, 250);
+    });
+
+    fetchSchools();
+  </script>
+</body>
+</html>
